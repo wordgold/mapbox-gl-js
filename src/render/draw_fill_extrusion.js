@@ -10,6 +10,9 @@ const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 const StencilMode = require('../gl/stencil_mode');
 
+const {UniformMatrix} = require('./uniform_binding');
+const {fillExtrusionUniforms, fillExtrusionPatternUniforms} = require('./program/fill_extrusion_program');
+
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type FillExtrusionStyleLayer from '../style/style_layer/fill_extrusion_style_layer';
@@ -32,7 +35,11 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
-            drawExtrusion(painter, source, layer, tile, coord, bucket, first);
+            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, [0, 1]),
+                stencilMode = StencilMode.disabled(),
+                colorMode = painter.colorModeForRenderPass();
+
+            drawExtrusion(painter, source, layer, tile, coord, bucket, first, depthMode, stencilMode, colorMode);
             first = false;
         }
     } else if (painter.renderPass === 'translucent') {
@@ -67,10 +74,6 @@ function drawToExtrusionFramebuffer(painter, layer) {
     }
 
     context.clear({ color: Color.transparent });
-
-    context.setStencilMode(StencilMode.disabled);
-    context.setDepthMode(new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, [0, 1]));
-    context.setColorMode(painter.colorModeForRenderPass());
 }
 
 function drawExtrusionTexture(painter, layer) {
@@ -101,7 +104,7 @@ function drawExtrusionTexture(painter, layer) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function drawExtrusion(painter, source, layer, tile, coord, bucket, first) {
+function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depthMode, stencilMode, colorMode) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -109,10 +112,20 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first) {
 
     const prevProgram = painter.context.program.get();
     const programConfiguration = bucket.programConfigurations.get(layer.id);
-    const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
+
+    const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion',
+        programConfiguration, image ? fillExtrusionPatternUniforms : fillExtrusionUniforms);
     if (first || program.program !== prevProgram) {
         programConfiguration.setUniforms(context, program, layer.paint, {zoom: painter.transform.zoom});
     }
+
+    // constructing a program should now also
+        // * initialize all static uniform bindings
+        // * bind all non-static uniform bindings (from programConfiguration)
+
+    // draw calls should now
+        // * set all static uniforms
+        // * set all non-static uniforms
 
     if (image) {
         if (pattern.isPatternMissing(image, painter)) return;
@@ -121,41 +134,43 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first) {
         gl.uniform1f(program.uniforms.u_height_factor, -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8);
     }
 
-    painter.context.gl.uniformMatrix4fv(program.uniforms.u_matrix, false, painter.translatePosMatrix(
-        coord.posMatrix,
-        tile,
-        layer.paint.get('fill-extrusion-translate'),
-        layer.paint.get('fill-extrusion-translate-anchor')
-    ));
-
-    setLight(program, painter);
-
-    program.draw(
-        context,
-        gl.TRIANGLES,
-        layer.id,
-        bucket.layoutVertexBuffer,
-        bucket.indexBuffer,
-        bucket.segments,
-        programConfiguration);
-}
-
-function setLight(program, painter) {
-    const gl = painter.context.gl;
     const light = painter.style.light;
 
     const _lp = light.properties.get('position');
     const lightPos = [_lp.x, _lp.y, _lp.z];
-
     const lightMat = mat3.create();
     if (light.properties.get('anchor') === 'viewport') {
         mat3.fromRotation(lightMat, -painter.transform.angle);
     }
     vec3.transformMat3(lightPos, lightPos, lightMat);
 
-    const color = light.properties.get('color');
+    const lightColor = light.properties.get('color');
 
-    gl.uniform3fv(program.uniforms.u_lightpos, lightPos);
-    gl.uniform1f(program.uniforms.u_lightintensity, light.properties.get('intensity'));
-    gl.uniform3f(program.uniforms.u_lightcolor, color.r, color.g, color.b);
+    program.boundUniforms.set({
+        u_matrix: painter.translatePosMatrix(
+            coord.posMatrix,
+            tile,
+            layer.paint.get('fill-extrusion-translate'),
+            layer.paint.get('fill-extrusion-translate-anchor')
+        ),
+        u_lightpos: lightPos,
+        u_lightintensity: light.properties.get('intensity'),
+        u_lightcolor: [lightColor.r, lightColor.g, lightColor.b]
+    })
+
+    program._draw(
+        context,
+        gl.TRIANGLES,
+        depthMode,
+        stencilMode,
+        colorMode,
+        // UniformValues,
+        layer.id,
+        bucket.layoutVertexBuffer,
+        bucket.indexBuffer,
+        bucket.segments,
+        // paint property binders,
+        layer.paint,
+        painter.transform.zoom,
+        programConfiguration);
 }
