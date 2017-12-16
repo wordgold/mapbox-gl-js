@@ -26,7 +26,7 @@ class Program {
     uniforms: {[string]: WebGLUniformLocation};
     attributes: {[string]: number};
     numAttributes: number;
-    boundUniforms: Uniforms;
+    boundUniforms: any; // Uniforms;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
@@ -147,7 +147,7 @@ class Program {
          indexBuffer: IndexBuffer,
          segments: SegmentVector,
          // paint prop binders, ?? or just use from ProgramConfiguration
-         currentProperties: PossiblyEvaluated<Properties>,
+         currentProperties: any, //PossiblyEvaluated<Properties>,
          zoom: number,
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer,

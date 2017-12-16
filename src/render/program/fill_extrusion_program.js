@@ -10,6 +10,7 @@ const {
 
 // import type PatternUniforms from './pattern';
 import type Program from '../program';
+import type Context from '../../gl/context';
 
 export type FillExtrusionUniforms = {|
     'u_matrix': UniformMatrix<4>,
