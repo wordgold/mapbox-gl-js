@@ -18,7 +18,6 @@ class Uniform<T> {
     location: WebGLUniformLocation;
     current: T;
     modifier: Components | UType;
-    uniformFnMap: any;
 
     constructor(modifier: Components | UType, context: Context, location: WebGLUniformLocation) {
         this.modifier = modifier;
@@ -36,8 +35,8 @@ class Uniform<T> {
     _set(v: T) {}
 }
 
-class UniformScalar<T> extends Uniform<T> implements UniformInterface<T> {
-    _set(v: any): void {
+class UniformScalar extends Uniform<number> implements UniformInterface<number> {
+    _set(v: number): void {
         switch (this.modifier) {
             case 'i':
                 this.context.gl.uniform1i(this.location, v);
@@ -50,8 +49,8 @@ class UniformScalar<T> extends Uniform<T> implements UniformInterface<T> {
     }
 }
 
-class UniformVector<T> extends Uniform<T> implements UniformInterface<T> {
-    _set(v: any): void {
+class UniformVector extends Uniform<Array<number>> implements UniformInterface<Array<number>> {
+    _set(v: Array<number>): void {
         switch (this.modifier) {
             case 2:
                 this.context.gl.uniform2fv(this.location, v);
@@ -67,13 +66,11 @@ class UniformVector<T> extends Uniform<T> implements UniformInterface<T> {
     }
 }
 
-class UniformMatrix<T> extends Uniform<T> implements UniformInterface<T> {
-    _set(v: any): void {
+class UniformMatrix extends Uniform<Float32Array> implements UniformInterface<Float32Array> {
+    _set(v: Float32Array): void {
         this.context.gl.uniformMatrix4fv(this.location, false, v);
     }
 }
-
-// export type UniformBindings = any;  // TODO
 
 class Uniforms {
     bindings: Object;    // TODO type better

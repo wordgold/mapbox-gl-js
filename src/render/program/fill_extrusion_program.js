@@ -13,10 +13,10 @@ import type Program from '../program';
 import type Context from '../../gl/context';
 
 export type FillExtrusionUniforms = {|
-    'u_matrix': UniformMatrix<4>,
-    'u_lightpos': UniformVector<3>,
-    'u_lightintensity': UniformScalar<'f'>,
-    'u_lightcolor': UniformVector<3>,
+    'u_matrix': UniformMatrix,
+    'u_lightpos': UniformVector,
+    'u_lightintensity': UniformScalar,
+    'u_lightcolor': UniformVector,
 |};
 
 // export type FillExtrusionPatternUniforms = {|
@@ -24,7 +24,6 @@ export type FillExtrusionUniforms = {|
 //     ...PatternUniforms,
 //     'u_height_factor': UniformScalar<'f'>,
 // |};
-
 
 const fillExtrusionUniforms = (context: Context, dynamicBinders: any, locations: {[key: string]: WebGLUniformLocation}) => {
     console.log(dynamicBinders)

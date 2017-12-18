@@ -109,6 +109,7 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depth
     const gl = context.gl;
 
     const image = layer.paint.get('fill-extrusion-pattern');
+    if (image && pattern.isPatternMissing(image, painter)) return;
 
     const prevProgram = painter.context.program.get();
     const programConfiguration = bucket.programConfigurations.get(layer.id);
@@ -126,13 +127,6 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depth
     // draw calls should now
         // * set all static uniforms
         // * set all non-static uniforms
-
-    if (image) {
-        if (pattern.isPatternMissing(image, painter)) return;
-        pattern.prepare(image, painter, program);
-        pattern.setTile(tile, painter, program);
-        gl.uniform1f(program.uniforms.u_height_factor, -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8);
-    }
 
     const light = painter.style.light;
 
@@ -156,7 +150,15 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depth
         u_lightpos: lightPos,
         u_lightintensity: light.properties.get('intensity'),
         u_lightcolor: [lightColor.r, lightColor.g, lightColor.b]
-    })
+    });
+
+    if (image) {
+        program.boundUniforms.set({
+            ...pattern.prepare(image, painter, program),
+            ...pattern.setTile(tile, painter, program),
+            u_height_factor: -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
+        });
+    }
 
     program._draw(
         context,

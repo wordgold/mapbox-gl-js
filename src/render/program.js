@@ -91,7 +91,7 @@ class Program {
 
         // TODO Eventually we will no longer have to store the intermediary location after this, and instead just construct uniform bindings directly
         this.boundUniforms = {};
-        if (staticUniformBindings) {      // TODO should delete this if eventually
+        if (staticUniformBindings) {      // TODO should delete this if statement eventually when uniformBindings are required
             this.boundUniforms = staticUniformBindings(context, configuration.binders, this.uniforms);
         }
     }
@@ -160,7 +160,6 @@ class Program {
         context.setColorMode(colorMode);
 
         // const uniforms = configuration.getUniforms(currentProperties, {zoom: zoom});    // TODO: concat w uniformValues
-
 
         const primitiveSize = {
             [gl.LINES]: 2,
