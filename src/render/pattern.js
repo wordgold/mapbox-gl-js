@@ -98,7 +98,7 @@ exports._setTile = function (tile: {tileID: OverscaledTileID, tileSize: number},
     return {
         u_tile_units_to_pixels: 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
-        u_pixel_coord_upper: pixelX >> 16, pixelY >> 16,
-        u_pixel_coord_lower: pixelX & 0xFFFF, pixelY & 0xFFFF
+        u_pixel_coord_upper: [pixelX >> 16, pixelY >> 16],
+        u_pixel_coord_lower: [pixelX & 0xFFFF, pixelY & 0xFFFF]
     };
 };

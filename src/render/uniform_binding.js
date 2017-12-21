@@ -1,6 +1,6 @@
 // @flow
 
-const util = require('../util/util');
+const assert = require('assert');
 
 import type Context from '../gl/context';
 
@@ -26,7 +26,19 @@ class Uniform<T> {
     }
 
     set(v: T) {
-        if (!util.deepEqual(this.current, v)) {
+        let diff = false;
+        if (Array.isArray(this.current)) {
+            for (let i = 0; i < this.current.length; i++) {
+                if (this.current[i] !== v[i]) {
+                    diff = true;
+                    break;
+                }
+            }
+        } else if (this.current !== v) {
+            diff = true;
+        }
+
+        if (diff) {
             this.current = v;
             this._set(v);
         }
@@ -81,12 +93,17 @@ class Uniforms {
 
     set(uniformValues: Object) {
         for (const name in uniformValues) {
+            assert(this.bindings[name]);
             this.bindings[name].set(uniformValues[name]);
         }
     }
 
-    concatenate(otherUniforms: Object) {
-        // TODO
+    concatenate(otherUniforms: Uniforms) {
+        this.bindings = {
+            ...this.bindings,
+            ...otherUniforms.bindings
+        };
+        return this;
     }
 
     // maybe also individual set accessor?

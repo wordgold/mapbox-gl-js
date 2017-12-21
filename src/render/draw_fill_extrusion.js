@@ -11,7 +11,7 @@ const vec3 = glMatrix.vec3;
 const StencilMode = require('../gl/stencil_mode');
 
 const {UniformMatrix} = require('./uniform_binding');
-const {fillExtrusionUniforms/*, fillExtrusionPatternUniforms*/} = require('./program/fill_extrusion_program');
+const {fillExtrusionUniforms, fillExtrusionPatternUniforms} = require('./program/fill_extrusion_program');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -154,8 +154,8 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depth
 
     if (image) {
         program.boundUniforms.set({
-            ...pattern.prepare(image, painter, program),
-            ...pattern.setTile(tile, painter, program),
+            ...pattern._prepare(image, painter, program),
+            ...pattern._setTile(tile, painter, program),
             u_height_factor: -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
         });
     }
