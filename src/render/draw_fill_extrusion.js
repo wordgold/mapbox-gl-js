@@ -11,7 +11,7 @@ const vec3 = glMatrix.vec3;
 const StencilMode = require('../gl/stencil_mode');
 
 const {UniformMatrix} = require('./uniform_binding');
-const {fillExtrusionUniforms, fillExtrusionPatternUniforms} = require('./program/fill_extrusion_program');
+const {fillExtrusionUniforms, fillExtrusionPatternUniforms, extrusionTextureUniforms} = require('./program/fill_extrusion_program');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -82,7 +82,7 @@ function drawExtrusionTexture(painter, layer) {
 
     const context = painter.context;
     const gl = context.gl;
-    const program = painter.useProgram('extrusionTexture');
+    const program = painter.useProgram('extrusionTexture', undefined, extrusionTextureUniforms);
 
     context.setStencilMode(StencilMode.disabled);
     context.setDepthMode(DepthMode.disabled);
@@ -91,14 +91,15 @@ function drawExtrusionTexture(painter, layer) {
     context.activeTexture.set(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, renderedTexture.colorAttachment.get());
 
-    gl.uniform1f(program.uniforms.u_opacity, layer.paint.get('fill-extrusion-opacity'));
-    gl.uniform1i(program.uniforms.u_image, 0);
-
     const matrix = mat4.create();
     mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
-    gl.uniformMatrix4fv(program.uniforms.u_matrix, false, matrix);
 
-    gl.uniform2f(program.uniforms.u_world, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    program.boundUniforms.set({
+        u_opacity: layer.paint.get('fill-extrusion-opacity'),
+        u_image: 0,
+        u_matrix: matrix,
+        u_world: [gl.drawingBufferWidth, gl.drawingBufferHeight]
+    });
 
     painter.viewportVAO.bind(context, program, painter.viewportBuffer, []);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

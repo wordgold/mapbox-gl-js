@@ -12,7 +12,7 @@ const {
 import type Program from '../program';
 import type Context from '../../gl/context';
 
-type PatternUniforms = {|                       // TODO for some reason this only works in FillExtrusionPatternUniforms when I inline it here — bug; investigate
+type PatternUniforms = {|                       // TODO for some reason this only works in FillExtrusionPatternUniforms when I inline it here — investigate
     'u_image': UniformScalar,
     'u_pattern_tl_a': UniformVector,
     'u_pattern_br_a': UniformVector,
@@ -41,6 +41,13 @@ export type FillExtrusionPatternUniforms = {|
     'u_height_factor': UniformScalar<'f'>,
 |};
 
+export type ExtrusionTextureUniforms = {|
+    'u_opacity': UniformScalar,
+    'u_image': UniformScalar,
+    'u_matrix': UniformMatrix,
+    'u_world': UniformVector
+|};
+
 const fillExtrusionUniforms = (context: Context, dynamicBinders: any, locations: {[key: string]: WebGLUniformLocation}) => {
     // console.log(dynamicBinders)
     return new Uniforms({
@@ -59,5 +66,13 @@ const fillExtrusionPatternUniforms = (context: Context, dynamicBinders: any, loc
     }));
 }
 
+const extrusionTextureUniforms = (context: Context, dynamicBinders: undefined, locations: {[key: string]: WebGLUniformLocation}) => {
+    return new Uniforms({
+        'u_opacity': new UniformScalar('f', context, locations.u_opacity),
+        'u_image': new UniformScalar('i', context, locations.u_image),
+        'u_matrix': new UniformMatrix(4, context, locations.u_matrix),
+        'u_world': new UniformVector(2, context, locations.u_world)
+    });
+}
 
-module.exports = { fillExtrusionUniforms, fillExtrusionPatternUniforms };
+module.exports = { fillExtrusionUniforms, fillExtrusionPatternUniforms, extrusionTextureUniforms };
