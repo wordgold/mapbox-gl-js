@@ -1,6 +1,7 @@
 // @flow
 
 const assert = require('assert');
+const util = require('../util/util');
 
 import type Context from '../gl/context';
 
@@ -10,22 +11,15 @@ export interface UniformInterface<T> {
     _set(value: T): void;
 }
 
-type Components = 1 | 2 | 3 | 4;
-type UType = 'f' | 'i';
-
 class Uniform<T> {
     context: Context;
-    location: WebGLUniformLocation;
     current: T;
-    modifier: Components | UType;
 
-    constructor(modifier: Components | UType, context: Context, location: WebGLUniformLocation) {
-        this.modifier = modifier;
+    constructor(context: Context) {
         this.context = context;
-        this.location = location;
     }
 
-    set(v: T) {
+    set(location: WebGLUniformLocation, v: T) {
         let diff = false;
         if (Array.isArray(this.current)) {
             for (let i = 0; i < this.current.length; i++) {
@@ -40,47 +34,46 @@ class Uniform<T> {
 
         if (diff) {
             this.current = v;
-            this._set(v);
+            this._set(location, v);
         }
     }
 
-    _set(v: T) {}
+    _set(location: WebGLUniformLocation, v: T) {}
 }
 
-class UniformScalar extends Uniform<number> implements UniformInterface<number> {
-    _set(v: number): void {
-        switch (this.modifier) {
-            case 'i':
-                this.context.gl.uniform1i(this.location, v);
-                break;
-            case 'f':
-                this.context.gl.uniform1f(this.location, v);
-                break;
-            default: break;
-        }
+class Uniform1i extends Uniform<number> implements UniformInterface<number> {
+    _set(location: WebGLUniformLocation, v: number): void {
+        this.context.gl.uniform1i(location, v);
     }
 }
 
-class UniformVector extends Uniform<Array<number>> implements UniformInterface<Array<number>> {
-    _set(v: Array<number>): void {
-        switch (this.modifier) {
-            case 2:
-                this.context.gl.uniform2fv(this.location, v);
-                break;
-            case 3:
-                this.context.gl.uniform3fv(this.location, v);
-                break;
-            case 4:
-                this.context.gl.uniform4fv(this.location, v);
-                break;
-            default: break;
-        }
+class Uniform1f extends Uniform<number> implements UniformInterface<number> {
+    _set(location: WebGLUniformLocation, v: number): void {
+        this.context.gl.uniform1f(location, v);
     }
 }
 
-class UniformMatrix extends Uniform<Float32Array> implements UniformInterface<Float32Array> {
-    _set(v: Float32Array): void {
-        this.context.gl.uniformMatrix4fv(this.location, false, v);
+class Uniform2fv extends Uniform<Array<2>> implements UniformInterface<Array<2>> {
+    _set(location: WebGLUniformLocation, v: Array<number>): void {
+        this.context.gl.uniform2fv(location, v);
+    }
+}
+
+class Uniform3fv extends Uniform<Array<3>> implements UniformInterface<Array<3>> {
+    _set(location: WebGLUniformLocation, v: Array<number>): void {
+        this.context.gl.uniform3fv(location, v);
+    }
+}
+
+class Uniform4fv extends Uniform<Array<4>> implements UniformInterface<Array<4>> {
+    _set(location: WebGLUniformLocation, v: Array<number>): void {
+        this.context.gl.uniform4fv(location, v);
+    }
+}
+
+class UniformMatrix4fv extends Uniform<Float32Array> implements UniformInterface<Float32Array> {
+    _set(location: WebGLUniformLocation, v: Float32Array): void {
+        this.context.gl.uniformMatrix4fv(location, false, v);
     }
 }
 
@@ -91,18 +84,15 @@ class Uniforms {
         this.bindings = bindings;
     }
 
-    set(uniformValues: Object) {
+    set(uniformLocations: Object, uniformValues: Object) {      // TODO better typing
         for (const name in uniformValues) {
             assert(this.bindings[name]);
-            this.bindings[name].set(uniformValues[name]);
+            this.bindings[name].set(uniformLocations[name], uniformValues[name]);
         }
     }
 
-    concatenate(otherUniforms: Uniforms) {
-        this.bindings = {
-            ...this.bindings,
-            ...otherUniforms.bindings
-        };
+    concatenate(otherUniforms: Uniforms) {      // TODO check copying overhead -- maybe not
+        this.bindings = util.extend({}, this.bindings, otherUniforms.bindings);
         return this;
     }
 
@@ -111,8 +101,11 @@ class Uniforms {
 
 
 module.exports = {
-    UniformScalar,
-    UniformVector,
-    UniformMatrix,
+    Uniform1i,
+    Uniform1f,
+    Uniform2fv,
+    Uniform3fv,
+    Uniform4fv,
+    UniformMatrix4fv,
     Uniforms
 };

@@ -94,7 +94,7 @@ function drawExtrusionTexture(painter, layer) {
     const matrix = mat4.create();
     mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
 
-    program.boundUniforms.set({
+    program.boundUniforms.set(program.uniforms, {
         u_opacity: layer.paint.get('fill-extrusion-opacity'),
         u_image: 0,
         u_matrix: matrix,
@@ -141,7 +141,7 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depth
 
     const lightColor = light.properties.get('color');
 
-    program.boundUniforms.set({
+    program.boundUniforms.set(program.uniforms, {
         u_matrix: painter.translatePosMatrix(
             coord.posMatrix,
             tile,
@@ -154,11 +154,10 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, first, depth
     });
 
     if (image) {
-        program.boundUniforms.set({
-            ...pattern._prepare(image, painter, program),
-            ...pattern._setTile(tile, painter, program),
-            u_height_factor: -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8
-        });
+        program.boundUniforms.set(util.extend({},
+            pattern._prepare(image, painter, program),
+            pattern._setTile(tile, painter, program),
+            { u_height_factor: -Math.pow(2, coord.overscaledZ) / tile.tileSize / 8 }));
     }
 
     program._draw(
