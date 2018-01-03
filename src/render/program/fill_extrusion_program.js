@@ -21,7 +21,7 @@ type PatternUniforms = {|                       // TODO for some reason this onl
     'u_pattern_tl_b': Uniform2fv,
     'u_pattern_br_b': Uniform2fv,
     'u_texsize': Uniform2fv,
-    'u_mix': UniformScalar,
+    'u_mix': Uniform1f,
     'u_pattern_size_a': Uniform2fv,
     'u_pattern_size_b': Uniform2fv,
     'u_scale_a': Uniform1f,

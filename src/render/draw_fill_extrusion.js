@@ -4,13 +4,13 @@ const glMatrix = require('@mapbox/gl-matrix');
 const pattern = require('./pattern');
 const Texture = require('./texture');
 const Color = require('../style-spec/util/color');
+const util = require('../util/util');
 const DepthMode = require('../gl/depth_mode');
 const mat3 = glMatrix.mat3;
 const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 const StencilMode = require('../gl/stencil_mode');
 
-const {UniformMatrix} = require('./uniform_binding');
 const {fillExtrusionUniforms, fillExtrusionPatternUniforms, extrusionTextureUniforms} = require('./program/fill_extrusion_program');
 
 import type Painter from './painter';
@@ -35,8 +35,8 @@ function draw(painter: Painter, source: SourceCache, layer: FillExtrusionStyleLa
             const bucket: ?FillExtrusionBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
-            const depthMode = new DepthMode(gl.LEQUAL, DepthMode.ReadWrite, [0, 1]),
-                stencilMode = StencilMode.disabled(),
+            const depthMode = new DepthMode(painter.context.gl.LEQUAL, DepthMode.ReadWrite, [0, 1]),
+                stencilMode = StencilMode.disabled,
                 colorMode = painter.colorModeForRenderPass();
 
             drawExtrusion(painter, source, layer, tile, coord, bucket, first, depthMode, stencilMode, colorMode);

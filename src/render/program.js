@@ -138,9 +138,9 @@ class Program {
 
     _draw(context: Context,
          drawMode: DrawMode,
-         depthMode: DepthMode,
-         stencilMode: StencilMode,
-         colorMode: ColorMode,
+         depthMode: /*DepthMode*/any,
+         stencilMode: /*StencilMode*/any,
+         colorMode: /*ColorMode*/any,       // TODO sth wrong with these
          // uniform values
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
@@ -168,14 +168,14 @@ class Program {
 
         for (const segment of segments.get()) {
             const vaos = segment.vaos || (segment.vaos = {});
-            const vao = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
+            const vao: VertexArrayObject = vaos[layerID] || (vaos[layerID] = new VertexArrayObject());
 
             vao.bind(
                 context,
                 this,
                 layoutVertexBuffer,
+                configuration ? configuration.getPaintVertexBuffers() : [],
                 indexBuffer,
-                configuration && configuration.paintVertexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer,
                 dynamicLayoutBuffer2

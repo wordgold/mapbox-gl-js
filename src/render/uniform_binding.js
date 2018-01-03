@@ -7,8 +7,8 @@ import type Context from '../gl/context';
 
 export interface UniformInterface<T> {
     context: Context;
-    set(value: T): void;
-    _set(value: T): void;
+    set(location: WebGLUniformLocation, value: T): void;
+    _set(location: WebGLUniformLocation, value: T): void;
 }
 
 class Uniform<T> {
@@ -21,7 +21,7 @@ class Uniform<T> {
 
     set(location: WebGLUniformLocation, v: T) {
         let diff = false;
-        if (Array.isArray(this.current)) {
+        if (Array.isArray(this.current) && Array.isArray(v)) {
             for (let i = 0; i < this.current.length; i++) {
                 if (this.current[i] !== v[i]) {
                     diff = true;
@@ -53,19 +53,19 @@ class Uniform1f extends Uniform<number> implements UniformInterface<number> {
     }
 }
 
-class Uniform2fv extends Uniform<Array<2>> implements UniformInterface<Array<2>> {
+class Uniform2fv extends Uniform<Array<number>> implements UniformInterface<Array<number>> {
     _set(location: WebGLUniformLocation, v: Array<number>): void {
         this.context.gl.uniform2fv(location, v);
     }
 }
 
-class Uniform3fv extends Uniform<Array<3>> implements UniformInterface<Array<3>> {
+class Uniform3fv extends Uniform<Array<number>> implements UniformInterface<Array<number>> {
     _set(location: WebGLUniformLocation, v: Array<number>): void {
         this.context.gl.uniform3fv(location, v);
     }
 }
 
-class Uniform4fv extends Uniform<Array<4>> implements UniformInterface<Array<4>> {
+class Uniform4fv extends Uniform<Array<number>> implements UniformInterface<Array<number>> {
     _set(location: WebGLUniformLocation, v: Array<number>): void {
         this.context.gl.uniform4fv(location, v);
     }
