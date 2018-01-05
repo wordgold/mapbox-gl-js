@@ -4,7 +4,6 @@ const assert = require('assert');
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 
 import type Painter from './painter';
-import type Program from './program';
 import type {OverscaledTileID} from '../source/tile_id';
 import type {CrossFaded} from '../style/cross_faded';
 import type {UniformValues} from './uniform_binding';
@@ -21,7 +20,7 @@ exports.isPatternMissing = function(image: ?CrossFaded<string>, painter: Painter
     return !imagePosA || !imagePosB;
 };
 
-exports.prepare = function (image: CrossFaded<string>, painter: Painter, program: Program): UniformValues {
+exports.prepare = function (image: CrossFaded<string>, painter: Painter): UniformValues {
     const context = painter.context;
     const gl = context.gl;
 
@@ -48,7 +47,7 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter, program
     }
 };
 
-exports.setTile = function (tile: {tileID: OverscaledTileID, tileSize: number}, painter: Painter, program: Program): UniformValues {
+exports.setTile = function (tile: {tileID: OverscaledTileID, tileSize: number}, painter: Painter): UniformValues {
     const numTiles = Math.pow(2, tile.tileID.overscaledZ);
     const tileSizeAtNearestZoom = tile.tileSize * Math.pow(2, painter.transform.tileZoom) / numTiles;
 

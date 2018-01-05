@@ -105,7 +105,7 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
             tile.iconAtlasTexture.bind(isSDF || painter.options.rotating || painter.options.zooming || iconScaled || iconTransformed ?
                 gl.LINEAR : gl.NEAREST, gl.CLAMP_TO_EDGE);
 
-            texSize = tile.glyphAtlasTexture.size;
+            texSize = tile.iconAtlasTexture.size;
         }
 
         const s = pixelsToTileUnits(tile, 1, painter.transform.zoom);

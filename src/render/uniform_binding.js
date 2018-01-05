@@ -26,7 +26,7 @@ class Uniform<T> {
         let diff = false;
         if (!this.current && v) {
             diff = true;
-        } else if (Array.isArray(this.current) && Array.isArray(v)) {
+        } else if (Array.isArray(this.current) && Array.isArray(v) && this.current !== v) {
             for (let i = 0; i < this.current.length; i++) {
                 if (this.current[i] !== v[i]) {
                     diff = true;

@@ -7,6 +7,7 @@ const {ProgramConfiguration} = require('../data/program_configuration');
 const VertexArrayObject = require('./vertex_array_object');
 const Context = require('../gl/context');
 const util = require('../util/util');
+const {Uniforms, Uniform1f, Uniform4fv} = require('./uniform_binding');
 
 import type {SegmentVector} from '../data/segment';
 import type VertexBuffer from '../gl/vertex_buffer';
@@ -15,7 +16,7 @@ import type DepthMode from '../gl/depth_mode';
 import type StencilMode from '../gl/stencil_mode';
 import type ColorMode from '../gl/color_mode';
 import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
-import type {Uniforms, UniformLocations} from './uniform_binding';
+import type {UniformValues, UniformLocations} from './uniform_binding';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -27,6 +28,8 @@ class Program {
     attributes: {[string]: number};
     numAttributes: number;
     staticUniforms: Uniforms;
+    dynamicUniforms: Uniforms;
+    configuration: ProgramConfiguration;
 
     constructor(context: Context,
                 source: {fragmentSource: string, vertexSource: string},
@@ -35,6 +38,7 @@ class Program {
                 showOverdrawInspector: boolean) {
         const gl = context.gl;
         this.program = gl.createProgram();
+        this.configuration = configuration;         // TODO will this be a problem to store it or no?
 
         const defines = configuration.defines().concat(
             `#define DEVICE_PIXEL_RATIO ${browser.devicePixelRatio.toFixed(1)}`);
@@ -89,7 +93,13 @@ class Program {
             }
         }
 
+        this.dynamicUniforms = new Uniforms(util.mapObject(configuration.getUniformBindings(),
+            (components) => components === 4 ? new Uniform4fv(context) : new Uniform1f(context)));
+
         this.staticUniforms = staticUniforms(context);
+            // .concatenate(new Uniforms(util.mapObject(configuration.getUniformBindings(), (components) =>
+            //     components === 4 ? new Uniform4fv(context) : new Uniform1f(context)
+            // )));
     }
 
     draw(context: Context,
@@ -134,17 +144,18 @@ class Program {
 
     _draw(context: Context,
          drawMode: DrawMode,
-         depthMode: /*DepthMode*/any,
-         stencilMode: /*StencilMode*/any,
-         colorMode: /*ColorMode*/any,       // TODO sth wrong with these
-         uniformValues: {[string]: number | Array<number> | Float32Array},
+         depthMode: DepthMode | $ReadOnly<DepthMode>,
+         stencilMode: StencilMode | $ReadOnly<StencilMode>,     // TODO this seems weird
+         colorMode: ColorMode | $ReadOnly<ColorMode>,
+         uniformValues: UniformValues,
          layerID: string,
          layoutVertexBuffer: VertexBuffer,
          indexBuffer: IndexBuffer,
          segments: SegmentVector,
          // paint prop binders, ?? or just use from ProgramConfiguration
-         currentProperties: any, //PossiblyEvaluated<Properties>,
+         currentProperties: any,
          zoom: number,
+         first: boolean,            // note: unfortunately it seems like this does make a perf difference
          configuration: ?ProgramConfiguration,
          dynamicLayoutBuffer: ?VertexBuffer,
          dynamicLayoutBuffer2: ?VertexBuffer) {
@@ -155,8 +166,11 @@ class Program {
         context.setStencilMode(stencilMode);
         context.setColorMode(colorMode);
 
-        // const uniforms = configuration.getUniforms(currentProperties, {zoom: zoom});    // TODO: concat w uniformValues
+        // TODO probably concatenate these?
         this.staticUniforms.set(this.uniforms, uniformValues);
+        if (first) {
+            this.dynamicUniforms.set(this.uniforms, this.configuration.getUniforms(currentProperties, {zoom: zoom}));
+        }
 
         const primitiveSize = {
             [gl.LINES]: 2,
@@ -171,7 +185,8 @@ class Program {
                 context,
                 this,
                 layoutVertexBuffer,
-                configuration ? configuration.getPaintVertexBuffers() : [],
+                configuration ? configuration.getPaintVertexBuffers() : [],     // TODO can we remove from args and use this.config, or are there special cases i am not considering?
+                        // in theory (or in code) different buckets (tiles) from the same layer could have diff configs, but i dont' see how this would happen in practice -- ?
                 indexBuffer,
                 segment.vertexOffset,
                 dynamicLayoutBuffer,

@@ -120,8 +120,8 @@ function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programCon
             programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
         }
         program.staticUniforms.set(program.uniforms, util.extend(
-            pattern.prepare(pat, painter, program),
-            pattern.setTile(tile, painter, program)
+            pattern.prepare(pat, painter),
+            pattern.setTile(tile, painter)
         ));
     }
     program.staticUniforms.set(program.uniforms, {

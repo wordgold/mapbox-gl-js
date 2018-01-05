@@ -3,6 +3,7 @@
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const StencilMode = require('../gl/stencil_mode');
 const DepthMode = require('../gl/depth_mode');
+const {circleUniformValues} = require('./program/circle_program');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -26,11 +27,11 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
     const context = painter.context;
     const gl = context.gl;
 
-    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
     // Allow circles to be drawn across boundaries, so that
     // large circles are not clipped to tiles
-    context.setStencilMode(StencilMode.disabled);
-    context.setColorMode(painter.colorModeForRenderPass());
+    const stencilMode = StencilMode.disabled,
+        depthMode = painter.depthModeForSublayer(0, DepthMode.ReadOnly),
+        colorMode = painter.colorModeForRenderPass();
 
     let first = true;
     for (let i = 0; i < coords.length; i++) {
@@ -40,44 +41,45 @@ function drawCircles(painter: Painter, sourceCache: SourceCache, layer: CircleSt
         const bucket: ?CircleBucket<*> = (tile.getBucket(layer): any);
         if (!bucket) continue;
 
-        const prevProgram = painter.context.program.get();
-        const programConfiguration = bucket.programConfigurations.get(layer.id);
-        const program = painter.useProgram('circle', programConfiguration);
-        if (first || program.program !== prevProgram) {
-            programConfiguration.setUniforms(context, program, layer.paint, {zoom: painter.transform.zoom});
-            first = false;
-        }
-
         let pitchWithMap, extrudeScale;
         if (layer.paint.get('circle-pitch-alignment') === 'map') {
             const pixelRatio = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-            pitchWithMap = 1;
+            pitchWithMap = true;
             extrudeScale = [pixelRatio, pixelRatio];
         } else {
-            pitchWithMap = 0;
+            pitchWithMap = false;
             extrudeScale = painter.transform.pixelsToGLUnits;
         }
 
-        program.staticUniforms.set(program.uniforms, {
-            u_camera_to_center_distance: painter.transform.cameraToCenterDistance,
-            u_scale_with_map: layer.paint.get('circle-pitch-scale') === 'map' ? 1 : 0,
-            u_matrix: painter.translatePosMatrix(
+        const uniformValues = circleUniformValues(
+            painter.translatePosMatrix(
                 coord.posMatrix,
                 tile,
                 layer.paint.get('circle-translate'),
-                layer.paint.get('circle-translate-anchor')
-            ),
-            u_pitch_with_map: pitchWithMap,
-            u_extrude_scale: extrudeScale
-        });
+                layer.paint.get('circle-translate-anchor')),
+            painter,
+            layer.paint.get('circle-pitch-scale') === 'map',
+            pitchWithMap,
+            extrudeScale);
 
-        program.draw(
+        const programConfiguration = bucket.programConfigurations.get(layer.id);
+        const program = painter.useProgram('circle', programConfiguration)
+
+        program._draw(
             context,
             gl.TRIANGLES,
+            depthMode,
+            stencilMode,
+            colorMode,
+            uniformValues,
             layer.id,
             bucket.layoutVertexBuffer,
             bucket.indexBuffer,
             bucket.segments,
+            layer.paint,
+            painter.transform.zoom,
+            first,
             programConfiguration);
+        first = false;
     }
 }
