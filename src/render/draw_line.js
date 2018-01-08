@@ -66,10 +66,10 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
             const widthA = posA.width * dasharray.fromScale;
             const widthB = posB.width * dasharray.toScale;
 
-            program.staticUniforms.set(program.uniforms, {
-                u_patternscale_a: [tileRatio / widthA, -posA.height / 2],
-                u_patternscale_b: [tileRatio / widthB, -posB.height / 2],
-                u_sdfgamma: painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2
+            program.fixedUniforms.set(program.uniforms, {
+                'u_patternscale_a': [tileRatio / widthA, -posA.height / 2],
+                'u_patternscale_b': [tileRatio / widthB, -posB.height / 2],
+                'u_sdfgamma': painter.lineAtlas.width / (Math.min(widthA, widthB) * 256 * browser.devicePixelRatio) / 2
             });
 
         } else if (image) {
@@ -79,15 +79,15 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
             const {width, height} = painter.imageManager.getPixelSize();
 
-            program.staticUniforms.set(program.uniforms, {
-                u_pattern_size_a: [imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosB.displaySize[1]],
-                u_pattern_size_b: [imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]],
-                u_texsize: [width, height]
+            program.fixedUniforms.set(program.uniforms, {
+                'u_pattern_size_a': [imagePosA.displaySize[0] * image.fromScale / tileRatio, imagePosB.displaySize[1]],
+                'u_pattern_size_b': [imagePosB.displaySize[0] * image.toScale / tileRatio, imagePosB.displaySize[1]],
+                'u_texsize': [width, height]
             });
         }
 
-        program.staticUniforms.set(program.uniforms, {
-            u_gl_units_to_pixels: [1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]]
+        program.fixedUniforms.set(program.uniforms, {
+            'u_gl_units_to_pixels': [1 / painter.transform.pixelsToGLUnits[0], 1 / painter.transform.pixelsToGLUnits[1]]
         });
     }
 
@@ -97,11 +97,11 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
             context.activeTexture.set(gl.TEXTURE0);
             painter.lineAtlas.bind(context);
 
-            program.staticUniforms.set(program.uniforms, {
-                u_image: 0,
-                u_tex_y_a: (posA: any).y,
-                u_tex_y_b: (posB: any).y,
-                u_mix: dasharray.t
+            program.fixedUniforms.set(program.uniforms, {
+                'u_image': 0,
+                'u_tex_y_a': (posA: any).y,
+                'u_tex_y_b': (posB: any).y,
+                'u_mix': dasharray.t
             });
 
 
@@ -109,13 +109,13 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
             context.activeTexture.set(gl.TEXTURE0);
             painter.imageManager.bind(context);
 
-            program.staticUniforms.set(program.uniforms, {
-                u_image: 0,
-                u_pattern_tl_a: (imagePosA: any).tl,
-                u_pattern_br_a: (imagePosA: any).br,
-                u_pattern_tl_b: (imagePosB: any).tl,
-                u_pattern_br_b: (imagePosB: any).br,
-                u_fade: image.t
+            program.fixedUniforms.set(program.uniforms, {
+                'u_image': 0,
+                'u_pattern_tl_a': (imagePosA: any).tl,
+                'u_pattern_br_a': (imagePosA: any).br,
+                'u_pattern_tl_b': (imagePosB: any).tl,
+                'u_pattern_br_b': (imagePosB: any).br,
+                'u_fade': image.t
             });
         }
     }
@@ -124,9 +124,9 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, programConfi
 
     const posMatrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
 
-    program.staticUniforms.set(program.uniforms, {
-        u_matrix: posMatrix,
-        u_ratio: 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom)
+    program.fixedUniforms.set(program.uniforms, {
+        'u_matrix': posMatrix,
+        'u_ratio': 1 / pixelsToTileUnits(tile, 1, painter.transform.zoom)
     });
 
     program.draw(

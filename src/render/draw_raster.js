@@ -26,15 +26,15 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
     context.setColorMode(painter.colorModeForRenderPass());
 
     // Constant parameters.
-    program.staticUniforms.set(program.uniforms, {
-        u_brightness_low: layer.paint.get('raster-brightness-min'),
-        u_brightness_high: layer.paint.get('raster-brightness-max'),
-        u_saturation_factor: saturationFactor(layer.paint.get('raster-saturation')),
-        u_contrast_factor: contrastFactor(layer.paint.get('raster-contrast')),
-        u_spin_weights: spinWeights(layer.paint.get('raster-hue-rotate')),
-        u_buffer_scale: 1,
-        u_image0: 0,
-        u_image1: 1
+    program.fixedUniforms.set(program.uniforms, {
+        'u_brightness_low': layer.paint.get('raster-brightness-min'),
+        'u_brightness_high': layer.paint.get('raster-brightness-max'),
+        'u_saturation_factor': saturationFactor(layer.paint.get('raster-saturation')),
+        'u_contrast_factor': contrastFactor(layer.paint.get('raster-contrast')),
+        'u_spin_weights': spinWeights(layer.paint.get('raster-hue-rotate')),
+        'u_buffer_scale': 1,
+        'u_image0': 0,
+        'u_image1': 1
     });
 
     const minTileZ = coords.length && coords[0].overscaledZ;
@@ -69,13 +69,13 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
             tile.texture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE, gl.LINEAR_MIPMAP_NEAREST);
         }
 
-        program.staticUniforms.set(program.uniforms, {
-            u_matrix: posMatrix,
+        program.fixedUniforms.set(program.uniforms, {
+            'u_matrix': posMatrix,
             // cross-fade parameters
-            u_tl_parent: parentTL || [0, 0],
-            u_scale_parent: parentScaleBy || 1,
-            u_fade_t: fade.mix,
-            u_opacity: fade.opacity * layer.paint.get('raster-opacity')
+            'u_tl_parent': parentTL || [0, 0],
+            'u_scale_parent': parentScaleBy || 1,
+            'u_fade_t': fade.mix,
+            'u_opacity': fade.opacity * layer.paint.get('raster-opacity')
         });
 
         if (source instanceof ImageSource) {

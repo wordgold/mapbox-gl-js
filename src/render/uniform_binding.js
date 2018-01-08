@@ -43,7 +43,7 @@ class Uniform<T> {
         }
     }
 
-    _set(location: WebGLUniformLocation, v: T) {}
+    _set(location: WebGLUniformLocation, v: T) {}  // eslint-disable-line
 }
 
 class Uniform1i extends Uniform<number> implements UniformInterface<number> {

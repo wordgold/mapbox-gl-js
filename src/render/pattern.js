@@ -33,18 +33,18 @@ exports.prepare = function (image: CrossFaded<string>, painter: Painter): Unifor
     painter.imageManager.bind(painter.context);
 
     return {
-        u_image: 0,
-        u_pattern_tl_a: (imagePosA: any).tl,
-        u_pattern_br_a: (imagePosA: any).br,
-        u_pattern_tl_b: (imagePosB: any).tl,
-        u_pattern_br_b: (imagePosB: any).br,
-        u_texsize: [width, height],
-        u_mix: image.t,
-        u_pattern_size_a: (imagePosA: any).displaySize,
-        u_pattern_size_b: (imagePosB: any).displaySize,
-        u_scale_a: image.fromScale,
-        u_scale_b: image.toScale
-    }
+        'u_image': 0,
+        'u_pattern_tl_a': (imagePosA: any).tl,
+        'u_pattern_br_a': (imagePosA: any).br,
+        'u_pattern_tl_b': (imagePosB: any).tl,
+        'u_pattern_br_b': (imagePosB: any).br,
+        'u_texsize': [width, height],
+        'u_mix': image.t,
+        'u_pattern_size_a': (imagePosA: any).displaySize,
+        'u_pattern_size_b': (imagePosB: any).displaySize,
+        'u_scale_a': image.fromScale,
+        'u_scale_b': image.toScale
+    };
 };
 
 exports.setTile = function (tile: {tileID: OverscaledTileID, tileSize: number}, painter: Painter): UniformValues {
@@ -55,9 +55,9 @@ exports.setTile = function (tile: {tileID: OverscaledTileID, tileSize: number}, 
     const pixelY = tileSizeAtNearestZoom * tile.tileID.canonical.y;
 
     return {
-        u_tile_units_to_pixels: 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
+        'u_tile_units_to_pixels': 1 / pixelsToTileUnits(tile, 1, painter.transform.tileZoom),
         // split the pixel coord into two pairs of 16 bit numbers. The glsl spec only guarantees 16 bits of precision.
-        u_pixel_coord_upper: [pixelX >> 16, pixelY >> 16],
-        u_pixel_coord_lower: [pixelX & 0xFFFF, pixelY & 0xFFFF]
+        'u_pixel_coord_upper': [pixelX >> 16, pixelY >> 16],
+        'u_pixel_coord_lower': [pixelX & 0xFFFF, pixelY & 0xFFFF]
     };
 };

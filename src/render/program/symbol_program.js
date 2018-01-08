@@ -30,7 +30,7 @@ const symbolIconUniforms = (context: Context) => {
         'u_gl_coord_matrix': new UniformMatrix4fv(context),
         'u_texsize': new Uniform2fv(context)
     });
-}
+};
 
 const symbolSDFUniforms = (context: Context) => {
     return symbolIconUniforms(context)
@@ -38,6 +38,6 @@ const symbolSDFUniforms = (context: Context) => {
             'u_gamma_scale': new Uniform1f(context),
             'u_is_halo': new Uniform1f(context)
         }));
-}
+};
 
 module.exports = { symbolIconUniforms, symbolSDFUniforms };

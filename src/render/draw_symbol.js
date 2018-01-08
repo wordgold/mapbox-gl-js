@@ -112,13 +112,13 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
         const labelPlaneMatrix = symbolProjection.getLabelPlaneMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
         const glCoordMatrix = symbolProjection.getGlCoordMatrix(coord.posMatrix, pitchWithMap, rotateWithMap, painter.transform, s);
 
-        program.staticUniforms.set(program.uniforms, {
-            u_texture: 0,
-            u_texsize: texSize,
-            u_matrix: painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
-            u_gl_coord_matrix: painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true),
-            u_label_plane_matrix: alongLine ? identityMat4 : labelPlaneMatrix,
-            u_fade_change: painter.options.fadeDuration ? painter.symbolFadeChange : 1
+        program.fixedUniforms.set(program.uniforms, {
+            'u_texture': 0,
+            'u_texsize': texSize,
+            'u_matrix': painter.translatePosMatrix(coord.posMatrix, tile, translate, translateAnchor),
+            'u_gl_coord_matrix': painter.translatePosMatrix(glCoordMatrix, tile, translate, translateAnchor, true),
+            'u_label_plane_matrix': alongLine ? identityMat4 : labelPlaneMatrix,
+            'u_fade_change': painter.options.fadeDuration ? painter.symbolFadeChange : 1
         });
 
         if (alongLine) {
@@ -130,8 +130,6 @@ function drawLayerSymbols(painter, sourceCache, layer, coords, isText, translate
 }
 
 function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pitchWithMap, sizeData) {
-
-    const gl = painter.context.gl;
     const tr = painter.transform;
 
     const isZoomConstant = sizeData.functionType === 'constant' || sizeData.functionType === 'source';
@@ -139,42 +137,40 @@ function setSymbolDrawState(program, painter, layer, isText, rotateInShader, pit
 
     const size = symbolSize.evaluateSizeForZoom(sizeData, tr.zoom, symbolLayoutProperties.properties[isText ? 'text-size' : 'icon-size']);
 
-    program.staticUniforms.set(program.uniforms, {
-        u_pitch_with_map: pitchWithMap ? 1 : 0,
-        u_is_text: isText ? 1 : 0,
-        u_pitch: tr.pitch / 360 * 2 * Math.PI,
-        u_is_size_zoom_constant: isZoomConstant ? 1 : 0,
-        u_is_size_feature_constant: isFeatureConstant ? 1 : 0,
-        u_camera_to_center_distance: tr.cameraToCenterDistance,
-        u_aspect_ratio: tr.width / tr.height,
-        u_rotate_symbol: rotateInShader ? 1 : 0,
-        u_size_t: size.uSizeT,              // TODO both this and u_size checked for undefined before -- is this ok to set even if undef?
-        u_size: size.uSize,                     // (also bc set(undef) might trip up flow). If so, use util.extend?
+    program.fixedUniforms.set(program.uniforms, {
+        'u_pitch_with_map': pitchWithMap ? 1 : 0,
+        'u_is_text': isText ? 1 : 0,
+        'u_pitch': tr.pitch / 360 * 2 * Math.PI,
+        'u_is_size_zoom_constant': isZoomConstant ? 1 : 0,
+        'u_is_size_feature_constant': isFeatureConstant ? 1 : 0,
+        'u_camera_to_center_distance': tr.cameraToCenterDistance,
+        'u_aspect_ratio': tr.width / tr.height,
+        'u_rotate_symbol': rotateInShader ? 1 : 0,
+        'u_size_t': size.uSizeT,              // TODO both this and u_size checked for undefined before -- is this ok to set even if undef?
+        'u_size': size.uSize,                     // (also bc set(undef) might trip up flow). If so, use util.extend?
     });
 }
 
 function drawTileSymbols(program, programConfiguration, painter, layer, tile, buffers, isText, isSDF, pitchWithMap) {
-
     const context = painter.context;
-    const gl = context.gl;
     const tr = painter.transform;
 
     if (isSDF) {
         const hasHalo = layer.paint.get(isText ? 'text-halo-width' : 'icon-halo-width').constantOr(1) !== 0;
         const gammaScale = (pitchWithMap ? Math.cos(tr._pitch) * tr.cameraToCenterDistance : 1);
-        program.staticUniforms.set(program.uniforms, {
-            u_gamma_scale: gammaScale
+        program.fixedUniforms.set(program.uniforms, {
+            'u_gamma_scale': gammaScale
         });
 
         if (hasHalo) { // Draw halo underneath the text.
-            program.staticUniforms.set(program.uniforms, {
-                u_is_halo: 1
+            program.fixedUniforms.set(program.uniforms, {
+                'u_is_halo': 1
             });
             drawSymbolElements(buffers, layer, context, program);
         }
 
-        program.staticUniforms.set(program.uniforms, {
-            u_is_halo: 0
+        program.fixedUniforms.set(program.uniforms, {
+            'u_is_halo': 0
         });
     }
 

@@ -92,8 +92,8 @@ function drawStrokeTile(painter, sourceCache, layer, tile, coord, bucket, firstT
     const pattern = layer.getPaintProperty('fill-outline-color') ? null : layer.paint.get('fill-pattern');
 
     const program = setFillProgram('fillOutline', pattern, painter, programConfiguration, layer, tile, coord, firstTile);
-    program.staticUniforms.set(program.uniforms, {
-        u_world: [gl.drawingBufferWidth, gl.drawingBufferHeight]
+    program.fixedUniforms.set(program.uniforms, {
+        'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight]
     });
 
     program.draw(
@@ -119,13 +119,13 @@ function setFillProgram(programId, pat: ?CrossFaded<string>, painter, programCon
         if (firstTile || program.program !== prevProgram) {
             programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom: painter.transform.zoom});
         }
-        program.staticUniforms.set(program.uniforms, util.extend(
+        program.fixedUniforms.set(program.uniforms, util.extend(
             pattern.prepare(pat, painter),
             pattern.setTile(tile, painter)
         ));
     }
-    program.staticUniforms.set(program.uniforms, {
-        u_matrix: painter.translatePosMatrix(
+    program.fixedUniforms.set(program.uniforms, {
+        'u_matrix': painter.translatePosMatrix(
             coord.posMatrix, tile,
             layer.paint.get('fill-translate'),
             layer.paint.get('fill-translate-anchor')

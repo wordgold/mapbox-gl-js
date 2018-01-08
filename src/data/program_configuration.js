@@ -11,7 +11,7 @@ const {
     StructArrayLayout2f8,
     StructArrayLayout4f16
 } = require('./array_types');
-const util = require('../util/util');
+const {Uniforms, Uniform1f, Uniform4fv} = require('../render/uniform_binding');
 
 import type Context from '../gl/context';
 import type {TypedStyleLayer} from '../style/style_layer/typed_style_layer';
@@ -21,11 +21,6 @@ import type Program from '../render/program';
 import type {Feature, SourceExpression, CompositeExpression} from '../style-spec/expression';
 import type {PossiblyEvaluated} from '../style/properties';
 import type {UniformValues} from '../render/uniform_binding';
-
-type BindingInfo = {|
-    name: string,
-    components: 1 | 4
-|};
 
 function packColor(color: Color): [number, number] {
     return [
@@ -65,7 +60,6 @@ interface Binder<T> {
     populatePaintArray(length: number, feature: Feature): void;
     upload(Context): void;
     destroy(): void;
-    getBindingInfo(): BindingInfo;
 
     defines(): Array<string>;
 
@@ -91,13 +85,6 @@ class ConstantBinder<T> implements Binder<T> {
         this.uniformName = `u_${this.name}`;
         this.type = type;
         this.statistics = { max: -Infinity };
-    }
-
-    getBindingInfo(): BindingInfo {
-        return {
-            name: this.uniformName,
-            components: this.type === 'color' ? 4 : 1
-        };
     }
 
     defines() {
@@ -153,13 +140,6 @@ class SourceExpressionBinder<T> implements Binder<T> {
             offset: 0
         }];
         this.paintVertexArray = new PaintVertexArray();
-    }
-
-    getBindingInfo(): BindingInfo {
-        return {
-            name: this.uniformName,
-            components: 1
-        };
     }
 
     defines() {
@@ -238,13 +218,6 @@ class CompositeExpressionBinder<T> implements Binder<T> {
             offset: 0
         }];
         this.paintVertexArray = new PaintVertexArray();
-    }
-
-    getBindingInfo(): BindingInfo {
-        return {
-            name: this.uniformName,
-            components: 1
-        };
     }
 
     defines() {
@@ -394,13 +367,18 @@ class ProgramConfiguration {
         return this._buffers;
     }
 
-    getUniformBindings(): {[string]: number} {
+    getUniformBindings(context: Context): Uniforms {
         const uniformBindings = {};
         for (const property in this.binders) {
-            const info = this.binders[property].getBindingInfo();
-            uniformBindings[info.name] = info.components;
+            const binder = this.binders[property];
+            if (binder instanceof ConstantBinder && binder.type === 'color') {
+                uniformBindings[binder.uniformName] = new Uniform4fv(context);
+            } else {
+                uniformBindings[binder.uniformName] = new Uniform1f(context);
+            }
         }
-        return uniformBindings;
+
+        return new Uniforms(uniformBindings);
     }
 
     getUniforms<Properties: Object>(properties: PossiblyEvaluated<Properties>, globals: GlobalProperties): UniformValues {

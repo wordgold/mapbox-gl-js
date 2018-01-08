@@ -8,6 +8,7 @@ import type SymbolBucket from '../data/bucket/symbol_bucket';
 const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const DepthMode = require('../gl/depth_mode');
 const StencilMode = require('../gl/stencil_mode');
+const {collisionUniformValues} = require('./program/collision_program');
 
 module.exports = drawCollisionDebug;
 
@@ -15,10 +16,6 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
     const context = painter.context;
     const gl = context.gl;
     const program = drawCircles ? painter.useProgram('collisionCircle') : painter.useProgram('collisionBox');
-
-    context.setDepthMode(DepthMode.disabled);
-    context.setStencilMode(StencilMode.disabled);
-    context.setColorMode(painter.colorModeForRenderPass());
 
     for (let i = 0; i < coords.length; i++) {
         const coord = coords[i];
@@ -32,24 +29,24 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
             context.lineWidth.set(1);
         }
 
-        const pixelRatio = pixelsToTileUnits(tile, 1, painter.transform.zoom);
-        const scale = Math.pow(2, painter.transform.zoom - tile.tileID.overscaledZ);
-
-        program.staticUniforms.set(program.uniforms, {
-            u_matrix: coord.posMatrix,
-            u_camera_to_center_distance: painter.transform.cameraToCenterDistance,
-            u_pixels_to_tile_units: pixelRatio,
-            u_extrude_scale: [painter.transform.pixelsToGLUnits[0] / (pixelRatio * scale),
-                painter.transform.pixelsToGLUnits[1] / (pixelRatio * scale)]
-        });
-
-        program.draw(
+        program._draw(
             context,
             drawCircles ? gl.TRIANGLES : gl.LINES,
+            DepthMode.disabled,
+            StencilMode.disabled,
+            painter.colorModeForRenderPass(),
+            collisionUniformValues(
+                coord.posMatrix,
+                painter.transform,
+                pixelsToTileUnits(tile, 1, painter.transform.zoom),
+                Math.pow(2, painter.transform.zoom - tile.tileID.overscaledZ)),
             layer.id,
             buffers.layoutVertexBuffer,
             buffers.indexBuffer,
             buffers.segments,
+            null,
+            painter.transform.zoom,
+            false,
             null,
             buffers.collisionVertexBuffer,
             null);

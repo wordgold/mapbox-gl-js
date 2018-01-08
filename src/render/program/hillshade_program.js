@@ -30,6 +30,6 @@ const hillshadePrepareUniforms = (context: Context) => {
         'u_dimension': new Uniform2fv(context),
         'u_image': new Uniform1i(context)
     });
-}
+};
 
 module.exports = { hillshadeUniforms, hillshadePrepareUniforms };

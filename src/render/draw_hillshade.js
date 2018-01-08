@@ -64,14 +64,14 @@ function renderHillshade(painter, tile, layer) {
 
     gl.bindTexture(gl.TEXTURE_2D, fbo.colorAttachment.get());
 
-    program.staticUniforms.set(program.uniforms, {
-        u_light: [layer.paint.get('hillshade-exaggeration'), azimuthal],
-        u_matrix: posMatrix,
-        u_latrange: latRange,
-        u_image: 0,
-        u_shadow: [shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a],
-        u_highlight: [highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a],
-        u_accent: [accentColor.r, accentColor.g, accentColor.b, accentColor.a]
+    program.fixedUniforms.set(program.uniforms, {
+        'u_light': [layer.paint.get('hillshade-exaggeration'), azimuthal],
+        'u_matrix': posMatrix,
+        'u_latrange': latRange,
+        'u_image': 0,
+        'u_shadow': [shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a],
+        'u_highlight': [highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a],
+        'u_accent': [accentColor.r, accentColor.g, accentColor.b, accentColor.a]
     });
 
     if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
@@ -149,11 +149,11 @@ function prepareHillshade(painter, tile) {
 
         const program = painter.useProgram('hillshadePrepare');
 
-        program.staticUniforms.set(program.uniforms, {
-            u_matrix: matrix,
-            u_zoom: tile.tileID.overscaledZ,
-            u_dimension: [tileSize * 2, tileSize * 2],
-            u_image: 1
+        program.fixedUniforms.set(program.uniforms, {
+            'u_matrix': matrix,
+            'u_zoom': tile.tileID.overscaledZ,
+            'u_dimension': [tileSize * 2, tileSize * 2],
+            'u_image': 1
         });
 
         const buffer = painter.rasterBoundsBuffer;

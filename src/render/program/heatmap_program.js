@@ -26,6 +26,6 @@ const heatmapTextureUniforms = (context: Context) => {
         'u_matrix': new UniformMatrix4fv(context),
         'u_world': new Uniform2fv(context)
     });
-}
+};
 
 module.exports = { heatmapUniforms, heatmapTextureUniforms };

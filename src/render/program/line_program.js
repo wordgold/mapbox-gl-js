@@ -31,7 +31,7 @@ const linePatternUniforms = (context: Context) => {
             'u_pattern_br_b': new Uniform2fv(context),
             'u_fade': new Uniform1f(context)
         }));
-}
+};
 
 const lineSDFUniforms = (context: Context) => {
     return lineUniforms(context)
@@ -44,6 +44,6 @@ const lineSDFUniforms = (context: Context) => {
             'u_tex_y_b': new Uniform1f(context),
             'u_mix': new Uniform1f(context)
         }));
-}
+};
 
 module.exports = { lineUniforms, linePatternUniforms, lineSDFUniforms };
