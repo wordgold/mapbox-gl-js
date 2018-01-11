@@ -6,10 +6,12 @@ const {
     UniformMatrix4fv,
     Uniforms
 } = require('../uniform_binding');
+const pixelsToTileUnits = require('../../source/pixels_to_tile_units');
 
 import type Context from '../../gl/context';
 import type {UniformValues} from '../uniform_binding';
 import type Transform from '../../geo/transform';
+import type Tile from '../../source/tile';
 
 const collisionUniforms = (context: Context) => {
     return new Uniforms({
@@ -20,7 +22,9 @@ const collisionUniforms = (context: Context) => {
     });
 };
 
-function collisionUniformValues(matrix: Float32Array, transform: Transform, pixelRatio: number, scale: number): UniformValues {
+function collisionUniformValues(matrix: Float32Array, transform: Transform, tile: Tile): UniformValues {
+    const pixelRatio = pixelsToTileUnits(tile, 1, transform.zoom);
+    const scale = Math.pow(2, transform.zoom - tile.tileID.overscaledZ);
     return {
         'u_matrix': matrix,
         'u_camera_to_center_distance': transform.cameraToCenterDistance,

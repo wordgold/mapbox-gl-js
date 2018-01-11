@@ -1,7 +1,7 @@
 // @flow
 
 const {fillExtrusionUniforms, fillExtrusionPatternUniforms, extrusionTextureUniforms} = require('./fill_extrusion_program');
-const {fillUniforms, fillPatternUniforms, fillOutlineUniforms} = require('./fill_program');
+const {fillUniforms, fillPatternUniforms, fillOutlineUniforms, fillOutlinePatternUniforms} = require('./fill_program');
 const {circleUniforms} = require('./circle_program');
 const {collisionUniforms} = require('./collision_program');
 const {debugUniforms} = require('./debug_program');
@@ -20,6 +20,7 @@ module.exports = {
     fill: fillUniforms,
     fillPattern: fillPatternUniforms,
     fillOutline: fillOutlineUniforms,
+    fillOutlinePattern: fillOutlinePatternUniforms,
     circle: circleUniforms,
     collisionBox: collisionUniforms,
     collisionCircle: collisionUniforms,

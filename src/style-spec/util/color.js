@@ -28,6 +28,7 @@ class Color {
     static black: Color;
     static white: Color;
     static transparent: Color;
+    static red: Color;
 
     /**
      * Parses valid CSS color strings and returns a `Color` instance.
@@ -79,5 +80,6 @@ class Color {
 Color.black = new Color(0, 0, 0, 1);
 Color.white = new Color(1, 1, 1, 1);
 Color.transparent = new Color(0, 0, 0, 0);
+Color.red = new Color(1, 0, 0, 1);
 
 module.exports = Color;

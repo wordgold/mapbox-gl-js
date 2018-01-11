@@ -34,21 +34,12 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     if (image) {
         if (pattern.isPatternMissing(image, painter)) return;
         program = painter.useProgram('backgroundPattern');
-        // program.fixedUniforms.set(program.uniforms, pattern.prepare(image, painter, program);
         painter.tileExtentPatternVAO.bind(context, program, painter.tileExtentBuffer, []);
     } else {
         program = painter.useProgram('background');
-        // program.fixedUniforms.set(program.uniforms, {
-        //     'u_color': [color.r, color.g, color.b, color.a]
-        // });
-        // TODO eventually we'll want to be able to draw arrays in program.draw as well
-        // refactor this later
         painter.tileExtentVAO.bind(context, program, painter.tileExtentBuffer, []);
     }
 
-    program.fixedUniforms.set(program.uniforms, {
-        'u_opacity': opacity
-    });
     const tileIDs = transform.coveringTiles({tileSize});
 
     for (const tileID of tileIDs) {
@@ -58,6 +49,8 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
         } else {
             program.fixedUniforms.set(program.uniforms, backgroundUniformValues(matrix, opacity, color));   // TODO should these take painter + tileID args rather than calculating the pos matrix here? probably
         }
+        // TODO eventually we'll want to be able to draw arrays in program.draw as well
+        // refactor this later
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, painter.tileExtentBuffer.length);
     }
 }

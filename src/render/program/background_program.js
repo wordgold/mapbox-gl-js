@@ -10,9 +10,12 @@ const {
 const pattern = require('../pattern');
 const util = require('../../util/util');
 
-import type Context from '../../gl/context';
+import type Painter from '../painter';
 import type {UniformValues} from '../uniform_binding';
+import type Context from '../../gl/context';
 import type Color from '../../style-spec/util/color';
+import type {CrossFaded} from '../../style/cross_faded';
+import type {OverscaledTileID} from '../../source/tile_id';
 
 const backgroundUniforms = (context: Context) => {
     return new Uniforms({
@@ -46,6 +49,5 @@ function backgroundPatternUniformValues(matrix: Float32Array, opacity: number, p
             'u_opacity': opacity
         });
 }
-
 
 module.exports = { backgroundUniforms, backgroundPatternUniforms, backgroundUniformValues, backgroundPatternUniformValues };

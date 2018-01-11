@@ -8,6 +8,10 @@ import type {OverscaledTileID} from '../source/tile_id';
 import type {CrossFaded} from '../style/cross_faded';
 import type {UniformValues} from './uniform_binding';
 
+
+// TODO delete this file: move setTile and prepare into program/pattern.js; move isPatternMissing into painter or util
+
+
 /**
  * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
  *

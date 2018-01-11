@@ -12,7 +12,6 @@ const {
 
 const glMatrix = require('@mapbox/gl-matrix');
 const mat3 = glMatrix.mat3;
-const mat4 = glMatrix.mat4;
 const vec3 = glMatrix.vec3;
 const pattern = require('../pattern');
 const util = require('../../util/util');
@@ -37,10 +36,10 @@ const fillExtrusionPatternUniforms = (context: Context): Uniforms => fillExtrusi
     }));
 
 const extrusionTextureUniforms = (context: Context): Uniforms => new Uniforms({
-    'u_opacity': new Uniform1f(context),
-    'u_image': new Uniform1i(context),
     'u_matrix': new UniformMatrix4fv(context),
-    'u_world': new Uniform2fv(context)
+    'u_world': new Uniform2fv(context),
+    'u_image': new Uniform1i(context),
+    'u_opacity': new Uniform1f(context)
 });
 
 function fillExtrusionUniformValues(matrix: Float32Array, painter: Painter): UniformValues {
@@ -63,7 +62,11 @@ function fillExtrusionUniformValues(matrix: Float32Array, painter: Painter): Uni
     };
 }
 
-function fillExtrusionPatternUniformValues(matrix: Float32Array, painter: Painter, coord: OverscaledTileID, image: CrossFaded<string>, tile: {tileID: OverscaledTileID, tileSize: number}): UniformValues {
+function fillExtrusionPatternUniformValues(matrix: Float32Array,
+                                           painter: Painter,
+                                           coord: OverscaledTileID,
+                                           image: CrossFaded<string>,
+                                           tile: {tileID: OverscaledTileID, tileSize: number}): UniformValues {
     return util.extend(fillExtrusionUniformValues(matrix, painter),
         pattern.prepare(image, painter),
         pattern.setTile(tile, painter),
@@ -72,10 +75,23 @@ function fillExtrusionPatternUniformValues(matrix: Float32Array, painter: Painte
         });
 }
 
+function extrusionTextureUniformValues(matrix: Float32Array,
+                                       drawingBufferSize: Array<number>,
+                                       textureUnit: number,
+                                       opacity: number): UniformValues {
+    return {
+        'u_matrix': matrix,
+        'u_world': drawingBufferSize,
+        'u_image': textureUnit,
+        'u_opacity': opacity
+    };
+}
+
 module.exports = {
     fillExtrusionUniforms,
     fillExtrusionPatternUniforms,
     extrusionTextureUniforms,
     fillExtrusionUniformValues,
-    fillExtrusionPatternUniformValues
+    fillExtrusionPatternUniformValues,
+    extrusionTextureUniformValues
 };

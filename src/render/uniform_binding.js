@@ -91,7 +91,7 @@ class Uniforms {
 
     set(uniformLocations: UniformLocations, uniformValues: UniformValues) {
         for (const name in uniformValues) {
-            assert(this.bindings[name]);
+            assert(this.bindings[name], `No binding with name ${name}`);
             this.bindings[name].set(uniformLocations[name], uniformValues[name]);
         }
     }

@@ -7,7 +7,11 @@ const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
 const mat4 = glMatrix.mat4;
 const StencilMode = require('../gl/stencil_mode');
-const {fillExtrusionUniformValues, fillExtrusionPatternUniformValues} = require('./program/fill_extrusion_program');
+const {
+    fillExtrusionUniformValues,
+    fillExtrusionPatternUniformValues,
+    extrusionTextureUniformValues
+} = require('./program/fill_extrusion_program');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -88,12 +92,9 @@ function drawExtrusionTexture(painter, layer) {
     const matrix = mat4.create();
     mat4.ortho(matrix, 0, painter.width, painter.height, 0, 0, 1);
 
-    program.fixedUniforms.set(program.uniforms, {
-        'u_opacity': layer.paint.get('fill-extrusion-opacity'),
-        'u_image': 0,
-        'u_matrix': matrix,
-        'u_world': [gl.drawingBufferWidth, gl.drawingBufferHeight]
-    });
+    program.fixedUniforms.set(program.uniforms, extrusionTextureUniformValues(
+        matrix, [gl.drawingBufferWidth, gl.drawingBufferHeight],
+        0, layer.paint.get('fill-extrusion-opacity')));
 
     // TODO refactor drawArrays into program.draw
 

@@ -14,7 +14,7 @@ import type DepthMode from '../gl/depth_mode';
 import type StencilMode from '../gl/stencil_mode';
 import type ColorMode from '../gl/color_mode';
 // import type {PossiblyEvaluated, PossiblyEvaluatedPropertyValue} from '../style/properties';
-import type {UniformValues, UniformLocations} from './uniform_binding';
+import type {Uniforms, UniformValues, UniformLocations} from './uniform_binding';
 
 export type DrawMode =
     | $PropertyType<WebGLRenderingContext, 'LINES'>
@@ -158,7 +158,7 @@ class Program {
         context.setColorMode(colorMode);
 
         this.fixedUniforms.set(this.uniforms, uniformValues);
-        this.binderUniforms.set(this.uniforms, configuration.getUniforms(currentProperties, {zoom: zoom}));
+        if (configuration) this.binderUniforms.set(this.uniforms, configuration.getUniforms(currentProperties, {zoom: zoom}));
 
         const primitiveSize = {
             [gl.LINES]: 2,

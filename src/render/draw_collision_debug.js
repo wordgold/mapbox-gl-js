@@ -5,7 +5,6 @@ import type SourceCache from '../source/source_cache';
 import type StyleLayer from '../style/style_layer';
 import type {OverscaledTileID} from '../source/tile_id';
 import type SymbolBucket from '../data/bucket/symbol_bucket';
-const pixelsToTileUnits = require('../source/pixels_to_tile_units');
 const DepthMode = require('../gl/depth_mode');
 const StencilMode = require('../gl/stencil_mode');
 const {collisionUniformValues} = require('./program/collision_program');
@@ -38,18 +37,16 @@ function drawCollisionDebugGeometry(painter: Painter, sourceCache: SourceCache, 
             collisionUniformValues(
                 coord.posMatrix,
                 painter.transform,
-                pixelsToTileUnits(tile, 1, painter.transform.zoom),
-                Math.pow(2, painter.transform.zoom - tile.tileID.overscaledZ)),
+                tile),
             layer.id,
             buffers.layoutVertexBuffer,
             buffers.indexBuffer,
             buffers.segments,
             null,
             painter.transform.zoom,
-            false,
             null,
-            buffers.collisionVertexBuffer,
-            null);
+            null,
+            buffers.collisionVertexBuffer);
     }
 }
 
