@@ -83,13 +83,13 @@ test('GeoJSONSource#setData', (t) => {
 test('GeoJSONSource#onRemove', (t) => {
     t.test('broadcasts "removeSource" event', (t) => {
         const source = new GeoJSONSource('id', {data: {}}, {
-            broadcast: function (type, data, callback) {
+            send: function (type, data, callback) {
                 t.false(callback);
                 t.equal(type, 'removeSource');
                 t.deepEqual(data, { type: 'geojson', source: 'id' });
                 t.end();
             },
-            send: function() {
+            broadcast: function() {
                 // Ignore
             }
         });
@@ -110,7 +110,7 @@ test('GeoJSONSource#update', (t) => {
     t.test('sends initial loadData request to dispatcher', (t) => {
         const mockDispatcher = {
             send: function(message) {
-                t.equal(message, 'geojson.loadData');
+                t.equal(message, 'geojson.id.loadData');
                 t.end();
             }
         };
@@ -122,7 +122,7 @@ test('GeoJSONSource#update', (t) => {
     t.test('forwards geojson-vt options with worker request', (t) => {
         const mockDispatcher = {
             send: function(message, params) {
-                t.equal(message, 'geojson.loadData');
+                t.equal(message, 'geojson.id.loadData');
                 t.deepEqual(params.geojsonVtOptions, {
                     extent: 8192,
                     maxZoom: 10,
@@ -193,7 +193,7 @@ test('GeoJSONSource#update', (t) => {
         let expectedLoadDataCalls = 2;
         const mockDispatcher = {
             send: function(message, args, callback) {
-                if (message === 'geojson.loadData' && --expectedLoadDataCalls <= 0) {
+                if (message === 'geojson.id.loadData' && --expectedLoadDataCalls <= 0) {
                     t.end();
                 }
                 if (callback) {

@@ -26,7 +26,7 @@ test('abortTile', (t) => {
             t.false(res);
         });
 
-        t.deepEqual(source.loading, { source: {} });
+        t.deepEqual(source.loading, {});
         t.end();
     });
 
@@ -38,9 +38,7 @@ test('removeTile', (t) => {
         const source = new VectorTileWorkerSource(null, new StyleLayerIndex());
 
         source.loaded = {
-            source: {
-                '0': {}
-            }
+            '0': {}
         };
 
         source.removeTile({
@@ -51,7 +49,7 @@ test('removeTile', (t) => {
             t.false(res);
         });
 
-        t.deepEqual(source.loaded, { source: {} });
+        t.deepEqual(source.loaded, {});
         t.end();
     });
 
