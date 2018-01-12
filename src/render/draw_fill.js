@@ -100,7 +100,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }
 
-        program._draw(
+        program.draw(
             painter.context,
             drawMode,
             depthMode,

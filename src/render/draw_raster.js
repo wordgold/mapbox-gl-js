@@ -63,13 +63,20 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
-        if (source instanceof ImageSource) {
-            const buffer = source.boundsBuffer;
-            const vao = source.boundsVAO;
-            vao.bind(context, program, buffer, []);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+        if (source instanceof ImageSource) {    // TODO manually test with image/video/canvas source
+            program.draw(
+                context,
+                gl.TRIANGLES,
+                depthMode,
+                stencilMode,
+                colorMode,
+                uniformValues,
+                layer.id,
+                source.boundsBuffer,
+                painter.quadTriangleIndexBuffer,
+                source.boundsSegments);
         } else if (tile.maskedBoundsBuffer && tile.maskedIndexBuffer && tile.segments) {
-            program._draw(
+            program.draw(
                 context,
                 gl.TRIANGLES,
                 depthMode,
@@ -81,17 +88,19 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 tile.maskedIndexBuffer,
                 tile.segments,
                 layer.paint,
-                painter.transform.zoom,
-                null);
-        } else {
-            program.fixedUniforms.set(program.uniforms, uniformValues);
-            context.setDepthMode(depthMode);
-            context.setStencilMode(stencilMode);
-            context.setColorMode(colorMode);
-            const buffer = painter.rasterBoundsBuffer;
-            const vao = painter.rasterBoundsVAO;
-            vao.bind(context, program, buffer, []);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
+                painter.transform.zoom);
+        } else {                            // TODO and make sure both of these are tested
+            program.draw(
+                context,
+                gl.TRIANGLES,
+                depthMode,
+                stencilMode,
+                colorMode,
+                uniformValues,
+                layer.id,
+                painter.rasterBoundsBuffer,
+                painter.quadTriangleIndexBuffer,
+                painter.rasterBoundsSegments);
         }
     }
 }

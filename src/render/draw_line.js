@@ -2,6 +2,7 @@
 
 const DepthMode = require('../gl/depth_mode');
 const {lineUniformValues, linePatternUniformValues, lineSDFUniformValues} = require('./program/line_program');
+const pattern = require('./pattern');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -46,12 +47,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, c
     const dasharray = layer.paint.get('line-dasharray');
     const image = layer.paint.get('line-pattern');
 
-    let imagePosA, imagePosB;
-    if (image) {            // TODO formerly only ran in tileRatioChanged || programChanged code path, jic
-        imagePosA = painter.imageManager.getPattern(image.from);
-        imagePosB = painter.imageManager.getPattern(image.to);
-        if (!imagePosA || !imagePosB) return;
-    }
+    if (pattern.isPatternMissing(image, painter)) return;
 
     if (programChanged) {
         if (dasharray) {
@@ -63,26 +59,15 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, c
         }
     }
 
-    const stencilMode = painter.stencilModeForClipping(coord);
-    const matrix = painter.translatePosMatrix(coord.posMatrix, tile, layer.paint.get('line-translate'), layer.paint.get('line-translate-anchor'));
+    const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray) :
+        image ? linePatternUniformValues(painter, tile, layer, image) :
+        lineUniformValues(painter, tile, layer);
 
-    let uniformValues;
-    if (dasharray) {
-        uniformValues = lineSDFUniformValues(matrix, painter.transform, tile, dasharray, painter.lineAtlas, layer.layout.get('line-cap') === 'round');
-    } else if (image) {
-        if (!imagePosA || !imagePosB) return;       // TODO this is redundant but one way to appease flow...reconsider
-        uniformValues = linePatternUniformValues(matrix, painter.transform, tile, image, imagePosA, imagePosB, painter.imageManager.getPixelSize());
-    } else {
-        uniformValues = lineUniformValues(matrix, painter.transform, tile);
-    }
-
-    program.fixedUniforms.set(program.uniforms, uniformValues);
-
-    program._draw(
+    program.draw(
             context,
             gl.TRIANGLES,
             depthMode,
-            stencilMode,
+            painter.stencilModeForClipping(coord),
             colorMode,
             uniformValues,
             layer.id,

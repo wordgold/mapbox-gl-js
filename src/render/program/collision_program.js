@@ -22,7 +22,11 @@ const collisionUniforms = (context: Context) => {
     });
 };
 
-function collisionUniformValues(matrix: Float32Array, transform: Transform, tile: Tile): UniformValues {
+function collisionUniformValues(
+    matrix: Float32Array,
+    transform: Transform,
+    tile: Tile
+): UniformValues {
     const pixelRatio = pixelsToTileUnits(tile, 1, transform.zoom);
     const scale = Math.pow(2, transform.zoom - tile.tileID.overscaledZ);
     return {
