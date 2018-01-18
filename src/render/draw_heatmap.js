@@ -35,7 +35,6 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
 
         context.clear({ color: Color.transparent });
 
-        let first = true;
         for (let i = 0; i < coords.length; i++) {
             const coord = coords[i];
 
@@ -48,14 +47,9 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const bucket: ?HeatmapBucket = (tile.getBucket(layer): any);
             if (!bucket) continue;
 
-            const prevProgram = painter.context.program.get();
             const programConfiguration = bucket.programConfigurations.get(layer.id);
             const program = painter.useProgram('heatmap', programConfiguration);
             const {zoom} = painter.transform;
-            if (first || program.program !== prevProgram) {
-                programConfiguration.setUniforms(painter.context, program, layer.paint, {zoom});
-                first = false;
-            }
 
             program.draw(
                 context,
