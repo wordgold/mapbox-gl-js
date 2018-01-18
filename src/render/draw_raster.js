@@ -25,10 +25,6 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
-
-    // TODO we could keep some of the uniform calculation here (saturationFactor, contrastFactor, spinWeights) rather
-    // than moving to raster_program in order to save a tiny amount of compute time per tile -- ??
-
     const minTileZ = coords.length && coords[0].overscaledZ;
 
     for (const coord of coords) {
@@ -63,7 +59,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
 
         const uniformValues = rasterUniformValues(posMatrix, parentTL || [0, 0], parentScaleBy || 1, fade, layer);
 
-        if (source instanceof ImageSource) {    // TODO manually test with image/video/canvas source
+        if (source instanceof ImageSource) {
             program.draw(
                 context,
                 gl.TRIANGLES,
@@ -89,7 +85,7 @@ function drawRaster(painter: Painter, sourceCache: SourceCache, layer: RasterSty
                 tile.segments,
                 layer.paint,
                 painter.transform.zoom);
-        } else {                            // TODO and make sure both of these are tested
+        } else {
             program.draw(
                 context,
                 gl.TRIANGLES,

@@ -7,7 +7,7 @@ const {
     UniformMatrix4fv,
     Uniforms
 } = require('../uniform_binding');
-const pattern = require('../pattern');
+const pattern = require('./pattern');
 const util = require('../../util/util');
 
 import type Painter from '../painter';

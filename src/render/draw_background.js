@@ -1,6 +1,5 @@
 // @flow
 
-const pattern = require('./pattern');
 const StencilMode = require('../gl/stencil_mode');
 const DepthMode = require('../gl/depth_mode');
 const {backgroundUniformValues, backgroundPatternUniformValues} = require('./program/background_program');
@@ -22,7 +21,7 @@ function drawBackground(painter: Painter, sourceCache: SourceCache, layer: Backg
     const transform = painter.transform;
     const tileSize = transform.tileSize;
     const image = layer.paint.get('background-pattern');
-    if (pattern.isPatternMissing(image, painter)) return;
+    if (painter.isPatternMissing(image)) return;
 
     const pass = (!image && color.a === 1 && opacity === 1) ? 'opaque' : 'translucent';
     if (painter.renderPass !== pass) return;

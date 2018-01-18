@@ -6,7 +6,7 @@ const {
     UniformMatrix4fv,
     Uniforms
 } = require('../uniform_binding');
-const pattern = require('../pattern');
+const pattern = require('./pattern');
 const util = require('../../util/util');
 
 import type Painter from '../painter';
@@ -54,8 +54,6 @@ function fillPatternUniformValues(
         pattern.prepare(image, painter),
         pattern.setTile(tile, painter));
 }
-// TODO wondering if this will be a perf hit we don't want (setting the non-tile-specific pattern uniforms -- .prepare -- on each tile)
-// TODO check this
 
 function fillOutlineUniformValues(
     matrix: Float32Array,

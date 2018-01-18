@@ -14,7 +14,7 @@ const glMatrix = require('@mapbox/gl-matrix');
 const mat3 = glMatrix.mat3;
 const vec3 = glMatrix.vec3;
 const mat4 = glMatrix.mat4;
-const pattern = require('../pattern');
+const pattern = require('./pattern');
 const util = require('../../util/util');
 
 import type Context from '../../gl/context';

@@ -123,7 +123,7 @@ class Program {
         const primitiveSize = {
             [gl.LINES]: 2,
             [gl.TRIANGLES]: 3,
-            [gl.LINE_STRIP]: 1  // TODO is this right
+            [gl.LINE_STRIP]: 1
         }[drawMode];
 
         for (const segment of segments.get()) {

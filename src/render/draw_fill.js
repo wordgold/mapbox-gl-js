@@ -1,6 +1,5 @@
 // @flow
 
-const pattern = require('./pattern');
 const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
 const {
@@ -62,7 +61,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
     const gl = painter.context.gl;
 
     const image = layer.paint.get('fill-pattern');
-    if (pattern.isPatternMissing(image, painter)) return;
+    if (painter.isPatternMissing(image)) return;
 
     let drawMode, programName, uniformValues, indexBuffer, segments;
 
@@ -95,7 +94,7 @@ function drawFillTiles(painter, sourceCache, layer, coords, depthMode, colorMode
             indexBuffer = bucket.indexBuffer2;
             segments = bucket.segments2;
             const drawingBufferSize = [gl.drawingBufferWidth, gl.drawingBufferHeight];
-            uniformValues = programName === 'fillOutlinePattern' ?
+            uniformValues = (programName === 'fillOutlinePattern' && image) ?
                 fillOutlinePatternUniformValues(tileMatrix, painter, image, tile, drawingBufferSize) :
                 fillOutlineUniformValues(tileMatrix, drawingBufferSize);
         }

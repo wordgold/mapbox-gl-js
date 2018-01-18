@@ -13,7 +13,7 @@ const posAttributes = require('../data/pos_attributes');
 const {ProgramConfiguration} = require('../data/program_configuration');
 const CrossTileSymbolIndex = require('../symbol/cross_tile_symbol_index');
 const shaders = require('../shaders');
-const programs = require('./program/programs');     // TODO probably rename
+const programs = require('./program/programs');     // revisit: should this be renamed? (program_uniforms?)
 const Program = require('./program');
 const Context = require('../gl/context');
 const DepthMode = require('../gl/depth_mode');
@@ -42,6 +42,7 @@ import type Tile from '../source/tile';
 import type {OverscaledTileID} from '../source/tile_id';
 import type Style from '../style/style';
 import type StyleLayer from '../style/style_layer';
+import type {CrossFaded} from '../style/cross_faded';
 import type LineAtlas from './line_atlas';
 import type ImageManager from './image_manager';
 import type GlyphManager from './glyph_manager';
@@ -87,6 +88,7 @@ class Painter {
     quadTriangleIndexBuffer: IndexBuffer;
     tileBorderIndexBuffer: IndexBuffer;
     _tileClippingMaskIDs: { [number]: number };
+    stencilClearMode: StencilMode;
     style: Style;
     options: PainterOptions;
     lineAtlas: LineAtlas;
@@ -191,7 +193,8 @@ class Painter {
         quadTriangleIndices.emplaceBack(2, 1, 3);
         this.quadTriangleIndexBuffer = context.createIndexBuffer(quadTriangleIndices);
 
-        // TODO using segments should elim these VAOs -- delete once they're all obsolete
+        const gl = this.context.gl;
+        this.stencilClearMode = new StencilMode({ func: gl.ALWAYS, mask: 0 }, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO);
     }
 
     /*
@@ -215,7 +218,7 @@ class Painter {
             context,
             gl.TRIANGLES,
             DepthMode.disabled,
-            new StencilMode({ func: gl.ALWAYS, mask: 0 }, 0x0, 0xFF, gl.ZERO, gl.ZERO, gl.ZERO),    // TODO save this so as not to reallocate on every render?
+            this.stencilClearMode,
             ColorMode.disabled,
             clippingMaskUniformValues(matrix),
             '$clipping',
@@ -476,6 +479,18 @@ class Painter {
     getTileTexture(size: number) {
         const textures = this._tileTextures[size];
         return textures && textures.length > 0 ? textures.pop() : null;
+    }
+
+    /**
+     * Checks whether a pattern image is needed, and if it is, whether it is not loaded.
+     *
+     * @returns true if a needed image is missing and rendering needs to be skipped.
+     */
+    isPatternMissing(image: ?CrossFaded<string>): boolean {
+        if (!image) return false;
+        const imagePosA = this.imageManager.getPattern(image.from);
+        const imagePosB = this.imageManager.getPattern(image.to);
+        return !imagePosA || !imagePosB;
     }
 
     _createProgramCached(name: string, programConfiguration: ProgramConfiguration): Program {

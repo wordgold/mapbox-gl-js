@@ -1,6 +1,5 @@
 // @flow
 
-const pattern = require('./pattern');
 const Texture = require('./texture');
 const Color = require('../style-spec/util/color');
 const DepthMode = require('../gl/depth_mode');
@@ -104,7 +103,7 @@ function drawExtrusion(painter, source, layer, tile, coord, bucket, depthMode, s
     const programConfiguration = bucket.programConfigurations.get(layer.id);
 
     const image = layer.paint.get('fill-extrusion-pattern');
-    if (image && pattern.isPatternMissing(image, painter)) return;
+    if (image && painter.isPatternMissing(image)) return;
 
     const program = painter.useProgram(image ? 'fillExtrusionPattern' : 'fillExtrusion', programConfiguration);
 

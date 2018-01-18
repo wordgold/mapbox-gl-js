@@ -2,7 +2,6 @@
 
 const DepthMode = require('../gl/depth_mode');
 const {lineUniformValues, linePatternUniformValues, lineSDFUniformValues} = require('./program/line_program');
-const pattern = require('./pattern');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -37,7 +36,7 @@ module.exports = function drawLine(painter: Painter, sourceCache: SourceCache, l
 
         drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, colorMode, programConfiguration, programChanged);
         firstTile = false;
-        // TODO once textures are refactored we'll also be able to remove this firstTile/programChanged logic
+        // once refactored so that bound texture state is managed, we'll also be able to remove this firstTile/programChanged logic
     }
 };
 
@@ -47,7 +46,7 @@ function drawLineTile(program, painter, tile, bucket, layer, coord, depthMode, c
     const dasharray = layer.paint.get('line-dasharray');
     const image = layer.paint.get('line-pattern');
 
-    if (pattern.isPatternMissing(image, painter)) return;
+    if (painter.isPatternMissing(image)) return;
 
     const uniformValues = dasharray ? lineSDFUniformValues(painter, tile, layer, dasharray) :
         image ? linePatternUniformValues(painter, tile, layer, image) :
